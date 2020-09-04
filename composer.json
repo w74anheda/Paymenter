@@ -1,11 +1,11 @@
 {
     "name": "m74asoud/paymenter",
-    "description": "handle all user payment by wallet and onlinePay ",
+    "description": "handle all user payment by wallet and onlinePay",
     "type": "library",
     "license": "MIT",
     "authors": [
         {
-            "name": "masoud nazarpoor",
+            "name": "m74asoud",
             "email": "m74asoud@gmail.com"
         }
     ],
