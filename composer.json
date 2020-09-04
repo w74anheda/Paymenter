@@ -1,0 +1,30 @@
+{
+    "name": "m74asoud/paymenter",
+    "description": "handle all user payment by wallet and onlinePay ",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "masoud nazarpoor",
+            "email": "m74asoud@gmail.com"
+        }
+    ],
+    "minimum-stability": "stable",
+    "autoload": {
+        "psr-4": {
+            "M74asoud\\Paymenter\\": "src/"
+        }
+    },
+    "extra": {
+        "laravel": {
+            "providers": [
+                "PaymenterServiceProvider"
+            ]
+        }
+    },
+    "require": {
+        "php": ">=7.1.0",
+        "laravel/framework": ">=5.5.0"
+    }
+
+}
