@@ -18,7 +18,7 @@
     "extra": {
         "laravel": {
             "providers": [
-                "PaymenterServiceProvider"
+                "M74asoud\\Paymenter\\PaymenterServiceProvider"
             ]
         }
     },
