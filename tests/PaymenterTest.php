@@ -136,8 +136,8 @@ class PaymenterTest extends TestCase
 
         $bill = $paymenterService->pay(
             new Online,
+            $user->hash,
             new PaymenterTDO(
-                $user->hash,
                 new ObjectValueMoney(250000),
                 'test for payment by laravel paymenter package',
                 100
@@ -165,8 +165,8 @@ class PaymenterTest extends TestCase
 
         $bill = $paymenterService->recharge(
             new Online,
+            $user->hash,
             new PaymenterTDO(
-                $user->hash,
                 new ObjectValueMoney(100000000),
                 'test for recharge wallet by laravel paymenter package',
                 100

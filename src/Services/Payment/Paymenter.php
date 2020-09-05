@@ -25,7 +25,7 @@ class Paymenter
     const PAY_TYPES = [
         'wallet'    => Wallet::class,
         'online'    => Online::class,
-        'card2card' => Card2Card::class
+        // 'card2card' => Card2Card::class
     ];
 
     const RECHARGE_TYPES = [
@@ -33,10 +33,10 @@ class Paymenter
         'card2card' => Card2Card::class
     ];
 
-    public function pay(PaymenterTypeInterface $paymenter_type, PaymenterTDO $paymenterTDO): Bill
+    public function pay(PaymenterTypeInterface $paymenter_type, string $user_hash , PaymenterTDO $paymenterTDO): Bill
     {
         $bill = Bill::create([
-            'user_hash' => $paymenterTDO->getUserHash(),
+            'user_hash' => $user_hash,
             'hash'      => Str::uuid(),
             'status'    => Bill::Status['pending'],
             'amount'    => $paymenterTDO->getAmount()->getValue(),
@@ -59,10 +59,10 @@ class Paymenter
         return $paymenter_type->apply($bill);
     }
 
-    public function recharge(PaymenterTypeInterface $paymenter_type, PaymenterTDO $paymenterTDO): Bill
+    public function recharge(PaymenterTypeInterface $paymenter_type, string $user_hash ,  PaymenterTDO $paymenterTDO): Bill
     {
         $bill = Bill::create([
-            'user_hash' => $paymenterTDO->getUserHash(),
+            'user_hash' => $user_hash,
             'hash'      => Str::uuid(),
             'status'    => Bill::Status['pending'],
             'amount'    => $paymenterTDO->getAmount()->getValue(),
