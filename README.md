@@ -29,13 +29,14 @@ class  User  extends  Authenticatable  {
 
 ```
 use M74asoud\Paymenter\Models\Bill;
+use M74asoud\Paymenter\ObjectValue\Money;
 use M74asoud\Paymenter\Services\Payment\PaymenterTDO;
 use M74asoud\Paymenter\Services\Payment\Types\Contract\PaymenterTypeInterface;
 ```
- - $user->balance() : Bill 
+ - $user->balance() : Money 
 	> balance method return the latest inventory of the user's wallet
 
- - $user->hasMoney(Money  $money): bill
+ - $user->hasMoney(Money  $money): bool
 	> does user hasMoney in wallet
 
  - $user->getPaymenterTypes(): array
