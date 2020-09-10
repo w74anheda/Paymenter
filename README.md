@@ -86,7 +86,7 @@ const  Status  =  [
 
 * if use online payment and $bill->status === 1 (watingPay)
 you must redirect user to bank portal with link : 
-$bill->paymentTransaction->request_link , then verify user payment in your custom class than created.
+$bill->paymentTransaction->requestPay() , then verify user payment in your custom class than created.
 
 
 * when you try to pay or recahrge you must pass an object of PaymenterTDO .

@@ -17,6 +17,10 @@ return
                 'RequestURL' => env('ZARINPAL_REQUEST_URL', 'https://sandbox.zarinpal.com/pg/StartPay'),
                 'VerifyURL' => env('ZARINPAL_VERIFY_URL', 'https://sandbox.zarinpal.com/pg/services/WebGate/wsdl'),
             ],
+            'saman' => [
+                'terminalId' => env('SAMAN_TERMINAL_ID', 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'),
+                'RequestURL' => env('SAMAN_REQUEST_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
+            ]
         ],
 
     ];

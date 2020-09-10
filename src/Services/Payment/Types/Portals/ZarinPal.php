@@ -31,7 +31,20 @@ class ZarinPal implements OnlinePortalInterface
 
             $client = new SoapClient(
                 config('m74_paymenter.portals.zarinpal.RequestClientURL'),
-                ['encoding' => 'UTF-8']
+                [
+                    'encoding' => 'UTF-8',
+                    'cache_wsdl'     => WSDL_CACHE_NONE,
+                    'trace'          => 1,
+                    'stream_context' => stream_context_create(
+                        [
+                            'ssl' => [
+                                'verify_peer'       => false,
+                                'verify_peer_name'  => false,
+                                'allow_self_signed' => true
+                            ]
+                        ]
+                    )
+                ]
             );
 
             $result = $client->PaymentRequest(
@@ -54,7 +67,6 @@ class ZarinPal implements OnlinePortalInterface
 
             DB::commit();
         } catch (Exception $err) {
-
             DB::rollBack();
             report($err);
 
@@ -64,6 +76,13 @@ class ZarinPal implements OnlinePortalInterface
         }
 
         return $transaction;
+    }
+
+    public static function request_link(PaymentTransaction $paymentTransaction)
+    {
+        return redirect(
+            $paymentTransaction->request_link
+        );
     }
 
     public function verify(Request $request, PaymentTransaction $paymentTransaction): Bill
@@ -86,7 +105,23 @@ class ZarinPal implements OnlinePortalInterface
                 $bill->setError();
             } else {
 
-                $client = new SoapClient(config('m74_paymenter.portals.zarinpal.VerifyURL'), ['encoding' => 'UTF-8']);
+                $client = new SoapClient(
+                    config('m74_paymenter.portals.zarinpal.VerifyURL'),
+                    [
+                        'encoding' => 'UTF-8',
+                        'cache_wsdl'     => WSDL_CACHE_NONE,
+                        'trace'          => 1,
+                        'stream_context' => stream_context_create(
+                            [
+                                'ssl' => [
+                                    'verify_peer'       => false,
+                                    'verify_peer_name'  => false,
+                                    'allow_self_signed' => true
+                                ]
+                            ]
+                        )
+                    ]
+                );
 
                 $result = $client->PaymentVerification(
                     [

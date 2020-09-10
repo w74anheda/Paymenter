@@ -17,6 +17,7 @@ use M74asoud\Paymenter\Models\Bill;
 use M74asoud\Paymenter\Models\PaymentTransaction;
 use M74asoud\Paymenter\Services\Payment\PaymenterTDO;
 use M74asoud\Paymenter\Services\Payment\Types\Online;
+use M74asoud\Paymenter\Services\Payment\Types\Portals\Saman;
 use Tests\TestCase;
 
 class PaymenterTest extends TestCase
@@ -135,7 +136,7 @@ class PaymenterTest extends TestCase
         $paymenterService = new Paymenter;
 
         $bill = $paymenterService->pay(
-            new Online,
+            new Online('SAMAN'),
             $user->hash,
             new PaymenterTDO(
                 new ObjectValueMoney(250000),
@@ -146,7 +147,7 @@ class PaymenterTest extends TestCase
 
         if ($bill->status === Bill::Status['watingPay']) {
             $this->assertTrue(
-                is_string($bill->paymentTransaction->request_link)
+                $bill->paymentTransaction->status === PaymentTransaction::STATUS['waitingVerify']
             );
         } else {
             $this->assertTrue(
@@ -154,11 +155,10 @@ class PaymenterTest extends TestCase
             );
         }
 
-        // dd($bill->paymentTransaction->request_link);
-        // dd($bill->paymentTransaction->request_link);
+        dd($bill->paymentTransaction->requestPay());
         // dd($bill->toArray());
     }
-    public function test_paymenter_recharge_method()
+    public function stest_paymenter_recharge_method()
     {
         $user = factory(UserInstance::UserModelClass())->create(['hash' => Str::uuid()]);
         $paymenterService = new Paymenter;

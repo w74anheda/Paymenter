@@ -15,7 +15,7 @@ class PaymenterServiceProvider extends ServiceProvider {
             __DIR__ . '/Database/Migrations' => database_path( 'migrations' ),
         ] );
 
-        //$this->loadMigrationsFrom(__DIR__.'/Database/Migrations');
+        $this->loadViewsFrom(__DIR__.'/Services/Payment/Types/Portals','portals');
 
     }
 

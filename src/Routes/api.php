@@ -20,6 +20,23 @@ use M74asoud\Paymenter\Services\Payment\Types\Wallet;
 |
 */
 
+Route::get('paymenter/request/{resNum}', function (Request $request) {
+
+    $paymentTransaction = PaymentTransaction::where('resNum', $request->resNum)
+        ->whereIn('status', [PaymentTransaction::STATUS['pending'], PaymentTransaction::STATUS['waitingVerify']])
+        ->firstOrFail();
+
+    $portal = Online::PORTALS[$paymentTransaction->portal];
+
+    if (!isset($portal)) {
+        abort(403);
+    }
+
+    return $portal::request_link($paymentTransaction);
+})->name('paymenter.request.link');
+
+
+
 Route::get('paymenter/verify', function (Request $request) {
 
     $verifyHandler = resolve(PaymenterControllerInterface::class);

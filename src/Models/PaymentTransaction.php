@@ -38,8 +38,13 @@ class PaymentTransaction extends Model
         'portal'
     ];
 
-    public function bill(){
-        return $this->belongsTo(Bill::class,'bill_hash','hash');
+    public function bill()
+    {
+        return $this->belongsTo(Bill::class, 'bill_hash', 'hash');
     }
 
+    public function requestPay(): string
+    {
+        return route('paymenter.request.link', $this->resNum);
+    }
 }
