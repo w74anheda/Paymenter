@@ -8,8 +8,9 @@ use M74asoud\Paymenter\Models\Bill;
 use M74asoud\Paymenter\Models\PaymentTransaction;
 use M74asoud\Paymenter\Services\Payment\Types\Portals\Contract\OnlinePortalInterface;
 use Illuminate\Support\Str;
-use SoapClient;
 use GuzzleHttp\Client;
+use Illuminate\Support\Facades\DB;
+use SoapClient;
 
 class Saman implements OnlinePortalInterface
 {
@@ -18,9 +19,8 @@ class Saman implements OnlinePortalInterface
 
     public function __construct()
     {
-        $this->httpClient = new Client([]);
+        $this->httpClient = new Client();
     }
-
 
     public function request(Bill $bill, array $data = []): PaymentTransaction
     {
@@ -30,9 +30,45 @@ class Saman implements OnlinePortalInterface
             'bill_hash' => $bill->hash,
             'amount' => $bill->amount,
             'resNum' => Str::uuid(),
-            'status' => PaymentTransaction::STATUS['waitingVerify'],
+            'status' => PaymentTransaction::STATUS['pending'],
             'portal' => $data['portal_key'],
         ]);
+
+        DB::beginTransaction();
+
+        try {
+            $response = $this->httpClient->post(
+                config('m74_paymenter.portals.saman.tokenUrl'),
+                [
+                    'form_params' => [
+                        'Action' => 'token',
+                        'TerminalId' =>  config('m74_paymenter.portals.saman.terminalId'),
+                        'RedirectURL' => route('paymenter.verify') . "?resNum={$transaction->resNum}" . "&portal=saman",
+                        'ResNum' => $transaction->resNum->toString(),
+                        'Amount' => $transaction->amount,
+                    ]
+                ]
+            );
+            $responseData = json_decode($response->getBody(), true);
+
+            if (
+                $response->getStatusCode() !== 200 ||
+                !isset($responseData['status']) ||
+                $responseData['status'] !== 1 ||
+                !isset($responseData['token'])
+            ) {
+                throw new Exception(json_encode($responseData));
+            }
+
+            $transaction->setWaitingVerify(['request_link' => $responseData['token']]);
+
+            DB::commit();
+        } catch (Exception $err) {
+            report($err);
+            DB::rollBack();
+            $transaction->setFaild(['error' => $err->getMessage()]);
+            // dd(json_decode($err->getMessage(), true));
+        }
 
         return $transaction;
     }
@@ -41,42 +77,64 @@ class Saman implements OnlinePortalInterface
     {
 
         return view('portals::Saman.requestPay')->with([
-            'paymentTransaction' => $paymentTransaction,
-            'terminalId' => config('m74_paymenter.portals.saman.terminalId'),
-            'requestURL' => config('m74_paymenter.portals.saman.RequestURL'),
-            'callBackUrl' => route('paymenter.verify') . "?resNum={$paymentTransaction->resNum}" . "&portal={$paymentTransaction->portal}",
+            'token' => $paymentTransaction->request_link,
+            'formRequestUrl' => config('m74_paymenter.portals.saman.formRequestUrl'),
         ]);
     }
 
-
-    public function verify(Request $request, PaymentTransaction $paymentTransaction): Bill
+    public function verify(Request $request, PaymentTransaction $transaction): Bill
     {
-        $bill = $paymentTransaction->bill;
+        //bank-request => ‫‪ResNum‬‬ - ‫‪RefNum‬‬ - ‫‪TraceNo‬‬ - ‫‪State‬‬ - ‫‪Status‬‬ - ‫‪TerminalId‬‬
+        $bill = $transaction->bill;
+        $fakeRefNum = !!PaymentTransaction::where('refNum', $request->‫‪RefNum)->first();
 
-        dd('saman verify method', $request->all());
+        if (
+            $transaction->status !==
+            PaymentTransaction::STATUS['waitingVerify']
+        ) {
+            return $bill;
+        }
 
+        DB::beginTransaction();
 
-        // $MerchantCode = "";
+        try {
 
-        // if(isset($_POST['State']) && $_POST['State'] == "OK") {
+            if (
+                $fakeRefNum ||
+                $transaction->resNum !== $request->ResNum ||
+                $request->State !== 'OK' ||
+                $request->‫‪TerminalId‬‬ !==  config('m74_paymenter.portals.saman.terminalId')
 
-        //     $soapclient = new soapclient('https://verify.sep.ir/Payments/ReferencePayment.asmx?WSDL');
-        //     $res 		= $soapclient->VerifyTransaction($_POST['RefNum'], $MerchantCode);
+            ) {
+                throw new Exception(json_encode($request));
+            }
 
-        //     if( $res <= 0 )
-        //     {
-        //         // Transaction Failed
-        //         echo "Transaction Failed";
-        //     } else {
-        //         // Transaction Successful
-        //         echo "Transaction Successful";
-        //         echo "Ref : {$_POST['RefNum']}<br />";
-        //         echo "Res : {$res}<br />";
-        //     }
-        // } else {
-        //     // Transaction Failed
-        //     echo "Transaction Failed";
-        // }
+            $soapclient = new SoapClient(config('m74_paymenter.portals.saman.soapService'));
+            $amount         = $soapclient->VerifyTransaction(
+                $request->‫‪RefNum‬‬,
+                config('m74_paymenter.portals.saman.terminalId')
+            );
+
+            if ($amount !== $transaction->amount) {
+                throw new Exception(json_encode($request));
+            }
+
+            $transaction->setPaid([
+                'refNum' => $request->‫‪RefNum‬‬,
+                'additional' => json_encode($request)
+            ]);
+
+            $bill->setPaid($transaction->id, PaymentTransaction::class);
+
+            DB::commit();
+        } catch (Exception $err) {
+
+            report($err);
+            DB::rollBack();
+            $transaction->setFaild(['error' => $err->getMessage()]);
+            $bill->setError();
+        }
+
 
         return $bill;
     }

@@ -19,7 +19,9 @@ return
             ],
             'saman' => [
                 'terminalId' => env('SAMAN_TERMINAL_ID', 'XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX'),
-                'RequestURL' => env('SAMAN_REQUEST_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
+                'tokenUrl' => env('SAMAN_Token_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
+                'formRequestUrl' => env('SAMAN_FORM_REQUEST_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
+                'soapService' => env('SAMAN_SOAP_SERVICE', 'https://verify.sep.ir/Payments/ReferencePayment.asmx'),
             ]
         ],
 

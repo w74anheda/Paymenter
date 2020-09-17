@@ -47,4 +47,37 @@ class PaymentTransaction extends Model
     {
         return route('paymenter.request.link', $this->resNum);
     }
+
+    public function setFaild(array $error = []): self
+    {
+        $this->update([
+            'status' => self::STATUS['failed'],
+            'additional' => json_encode($error)
+        ]);
+        return $this;
+    }
+
+    public function setCancel(): self
+    {
+        $this->update(['status' => self::STATUS['cancel']]);
+        return $this;
+    }
+
+    public function setWaitingVerify(array $data = []): self
+    {
+        $this->update(array_merge(
+            ['status' => self::STATUS['waitingVerify']],
+            $data
+        ));
+        return $this;
+    }
+    
+    public function setPaid(array $data = []): self
+    {
+        $this->update(array_merge(
+            ['status' => self::STATUS['paid']],
+            $data
+        ));
+        return $this;
+    }
 }

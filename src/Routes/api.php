@@ -37,7 +37,7 @@ Route::get('paymenter/request/{resNum}', function (Request $request) {
 
 
 
-Route::get('paymenter/verify', function (Request $request) {
+Route::any('paymenter/verify', function (Request $request) {
 
     $verifyHandler = resolve(PaymenterControllerInterface::class);
     $paymentTransaction = PaymentTransaction::where('resNum', $request->resNum)->firstOrFail();
