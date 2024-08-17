@@ -38,28 +38,48 @@ Route::get('paymenter/request/{resNum}', function (Request $request) {
 
 
 Route::any('paymenter/verify', function (Request $request) {
-
     $verifyHandler = resolve(PaymenterControllerInterface::class);
-    $paymentTransaction = PaymentTransaction::where('resNum', $request->resNum)->firstOrFail();
+    
+    $portal = $request->portal ?? 'SAMAN';
+    
+    if (!isset(Online::PORTALS[$portal])) {
+        throw new Exception('Invalid portal');
+    }
+
+    $paymentTransaction = null;
+    if ($portal == 'PARSIAN') {
+        $paymentTransaction = PaymentTransaction::where('request_link', $request->Token)->firstOrFail();
+    } else {
+        $paymentTransaction = PaymentTransaction::where('resNum', $request->resNum)->firstOrFail();
+    }
+
     $bill = $paymentTransaction->bill;
 
-    if ($bill->status !== Bill::Status['watingPay']) {
+
+    $payableStatuses = [
+        Bill::Status['pending'],
+        Bill::Status['watingPay'],
+    ];
+
+    if (!in_array($bill->status, $payableStatuses)) {
         return $verifyHandler->verifyHandler($bill);
     }
 
     DB::beginTransaction();
-
     try {
-
-        if (!isset(Online::PORTALS[$request->portal])) {
-
-            throw new Exception('portal invalid');
+        if ($portal == 'PARSIAN') {
+            // Parsian-specific verification
+            $bill = resolve(Online::PORTALS[$portal])->verify(
+                $request,
+                $paymentTransaction
+            );
+        } else {
+            // Generic verification for other gateways
+            $bill = resolve(Online::PORTALS[$portal])->verify(
+                $request,
+                $paymentTransaction
+            );
         }
-
-        $bill = resolve(Online::PORTALS[$request->portal])->verify(
-            $request,
-            $paymentTransaction
-        );
 
         if ($bill->status === Bill::Status['paid'] && $bill->actionType === Bill::ActionType['recharge']) {
             $walletManager = new Wallet();

@@ -8,6 +8,7 @@ use M74asoud\Paymenter\Models\Bill;
 use M74asoud\Paymenter\Models\PaymentTransaction;
 use M74asoud\Paymenter\Services\Payment\Types\Contract\PaymenterTypeInterface;
 use M74asoud\Paymenter\Services\Payment\Types\Portals\Saman;
+use M74asoud\Paymenter\Services\Payment\Types\Portals\Parsian;
 use M74asoud\Paymenter\Services\Payment\Types\Portals\ZarinPal;
 
 class Online implements PaymenterTypeInterface
@@ -16,7 +17,8 @@ class Online implements PaymenterTypeInterface
 
     const PORTALS = [
         'ZARINPAL' => ZarinPal::class,
-        'SAMAN' => Saman::class
+        'SAMAN' => Saman::class,
+        'PARSIAN' => Parsian::class
     ];
 
     public function __construct(string $portal = 'ZARINPAL')

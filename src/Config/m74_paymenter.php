@@ -22,7 +22,14 @@ return
                 'tokenUrl' => env('SAMAN_Token_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
                 'formRequestUrl' => env('SAMAN_FORM_REQUEST_URL', 'https://sep.shaparak.ir/MobilePG/MobilePayment'),
                 'soapService' => env('SAMAN_SOAP_SERVICE', 'https://verify.sep.ir/Payments/ReferencePayment.asmx'),
-            ]
+            ],
+            'parsian' => [
+                'apiPurchaseUrl' => env('PARSIAN_PURCHASE_URL', 'https://pec.shaparak.ir/NewIPGServices/Sale/SaleService.asmx?wsdl'),
+                'apiPaymentUrl' => env('PARSIAN_PAYMENT_URL', 'https://pec.shaparak.ir/NewIPG'),
+                'apiVerificationUrl' => env('PARSIAN_VERIFY_URL', 'https://pec.shaparak.ir/NewIPGServices/Confirm/ConfirmService.asmx?wsdl'),
+                'merchantId' => env('PARSIAN_MERCHANT_ID', '12345678'),
+                'pinCode' => env('PARSIAN_PIN_CODE', 'XXXXXXXXXXXXXXXXXXXX')
+            ],
         ],
 
     ];
